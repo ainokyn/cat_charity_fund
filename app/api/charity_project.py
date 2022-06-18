@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.validator import (cant_delete, cant_update, name_uniq,
-                               project_is_exist, projects_is_exist)
+from app.api.validator import (cant_delete, check_project_before_edit,
+                               name_uniq, projects_is_exist)
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charityproject_crud
@@ -50,8 +50,7 @@ async def delete_charity(
     Только для суперюзеров.Удаляет проект. Нельзя удалить проект,
     в который уже были инвестированы средства, его можно только закрыть.
     """
-    charity = await project_is_exist(project_id, session)
-    await cant_delete(charity, session)
+    charity = await cant_delete(project_id, session)
     charity = await charityproject_crud.delete(charity, session)
     return charity
 
@@ -67,9 +66,8 @@ async def patch_charity(
     Только для суперюзеров.Закрытый проект нельзя редактировать,
     также нельзя установить требуемую сумму меньше уже вложенной.
     """
-    charity = await project_is_exist(project_id, session)
+    charity = await check_project_before_edit(project_id, session)
     if obj_in.name is not None:
         await name_uniq(obj_in.name, session)
-    await cant_update(charity, obj_in, session)
     charity = await charityproject_crud.update(charity, obj_in, session)
     return charity

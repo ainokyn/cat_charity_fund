@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
-from app.service.service import invested
+from app.service.service import invested_donat
 
 
 class CRUDBase:
@@ -20,7 +20,6 @@ class CRUDBase:
         """
         Получает объект по id.
         """
-        await invested(session)
         db_obj = await session.execute(
             select(self.model).where(
                 self.model.id == obj_id
@@ -35,7 +34,6 @@ class CRUDBase:
         """
         Получает список объектов.
         """
-        await invested(session)
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
 
@@ -52,6 +50,7 @@ class CRUDBase:
         if user is not None:
             obj_in_data['user_id'] = user.id
         db_obj = self.model(**obj_in_data)
+        await invested_donat(session, db_obj)
         session.add(db_obj)
         await session.commit()
         await session.refresh(db_obj)

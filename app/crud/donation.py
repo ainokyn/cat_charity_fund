@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.base import CRUDBase
 from app.models import User
 from app.models.donation import Donation
-from app.service.service import invested
 
 
 class CRUDDonationProject(CRUDBase):
@@ -15,7 +14,6 @@ class CRUDDonationProject(CRUDBase):
         """
         Получает список донатов определенного пользователя.
         """
-        await invested(session)
         donation = await session.execute(select(Donation).where(Donation.user_id == user.id))
         donation = donation.scalars().all()
         return donation

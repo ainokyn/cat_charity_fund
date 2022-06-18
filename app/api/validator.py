@@ -75,25 +75,42 @@ async def donats_is_exist(session: AsyncSession) -> list[Donation]:
     return donates
 
 
-async def cant_delete(*kwargs) -> None:
+async def cant_delete(project_id: int,
+                      session: AsyncSession,) -> CharityProject:
     """
     Проверяет можно ли удалить проект.
     """
-    db_obj = await charityproject_crud.delete(*kwargs)
-    if not db_obj:
+    project = await charityproject_crud.get(project_id, session)
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail='Проект не найден!'
+        )
+    if project.invested_amount != 0:
         raise HTTPException(
             status_code=400,
             detail='В проект были внесены средства, не подлежит удалению!',
         )
+    return project
 
 
-async def cant_update(*kwargs) -> None:
+async def check_project_before_edit(
+        project_id: int,
+        session: AsyncSession,
+
+) -> CharityProject:
     """
     Проверяет можно ли обновить частично проект.
     """
-    db_obj = await charityproject_crud.update(*kwargs)
-    if not db_obj:
+    project = await charityproject_crud.get(project_id, session)
+    if not project:
+        raise HTTPException(
+            status_code=404,
+            detail='Проект не найден!'
+        )
+    if project.fully_invested is True:
         raise HTTPException(
             status_code=400,
             detail='Закрытый проект нельзя редактировать!',
         )
+    return project
