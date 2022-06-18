@@ -36,7 +36,15 @@ class CRUDCharityProject(CRUDBase):
         """
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(exclude_unset=True)
-        if db_obj.fully_invested is not True and update_data['full_amount'] > obj_data['invested_amount']:
+        if db_obj.fully_invested is not True and 'full_amount' in update_data and update_data['full_amount'] > obj_data['invested_amount']:
+            for field in obj_data:
+                if field in update_data:
+                    setattr(db_obj, field, update_data[field])
+            session.add(db_obj)
+            await session.commit()
+            await session.refresh(db_obj)
+            return db_obj
+        if db_obj.fully_invested is not True and 'full_amount' not in update_data:
             for field in obj_data:
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])

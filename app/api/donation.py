@@ -6,13 +6,13 @@ from app.core.db import get_async_session
 from app.core.user import current_superuser, current_user
 from app.crud.donation import donation_crud
 from app.models.user import User
-from app.schemas.donation import DonationCreate, DonationDB
+from app.schemas.donation import DonationCreate, DonationDB, DonationDB_Full
 
 router = APIRouter()
 
 
 @router.get('/',
-            response_model=list[DonationDB],
+            response_model=list[DonationDB_Full],
             dependencies=[Depends(current_superuser)],
             response_model_exclude_none=True,
             )
@@ -28,8 +28,7 @@ async def get_all_donations(
 
 @router.post('/',
              response_model=DonationDB,
-             response_model_exclude={
-                 'user_id', 'invested_amount', 'fully_invested', 'close_date'},
+             response_model_exclude_none=True,
              )
 async def create_donations(
         donation: DonationCreate,
@@ -43,8 +42,6 @@ async def create_donations(
 
 
 @router.get('/my', response_model=list[DonationDB],
-            response_model_exclude={
-                 'user_id', 'invested_amount', 'fully_invested', 'close_date'},
             )
 async def get_my_donations(
         user: User = Depends(current_user),

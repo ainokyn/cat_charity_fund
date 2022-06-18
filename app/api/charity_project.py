@@ -6,14 +6,15 @@ from app.api.validator import (cant_delete, cant_update, name_uniq,
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charityproject_crud
-from app.schemas.charity_project import (
-    CharityProjectCreate, CharityProjectDB,
-    CharityProjectUpdate)
+from app.schemas.charity_project import (CharityProjectCreate,
+                                         CharityProjectDB,
+                                         CharityProjectUpdate)
 
 router = APIRouter()
 
 
-@router.get('/', response_model=list[CharityProjectDB])
+@router.get('/', response_model=list[CharityProjectDB],
+            response_model_exclude_none=True,)
 async def get_all_charity(
         session: AsyncSession = Depends(get_async_session),):
     """
@@ -26,7 +27,8 @@ async def get_all_charity(
 
 @router.post('/',
              response_model=CharityProjectDB,
-             dependencies=[Depends(current_superuser)],)
+             dependencies=[Depends(current_superuser)],
+             response_model_exclude_none=True,)
 async def create_charity(
         charity: CharityProjectCreate,
         session: AsyncSession = Depends(get_async_session),):
@@ -66,8 +68,8 @@ async def patch_charity(
     также нельзя установить требуемую сумму меньше уже вложенной.
     """
     charity = await project_is_exist(project_id, session)
-    await cant_update(charity, obj_in, session)
     if obj_in.name is not None:
         await name_uniq(obj_in.name, session)
+    await cant_update(charity, obj_in, session)
     charity = await charityproject_crud.update(charity, obj_in, session)
     return charity

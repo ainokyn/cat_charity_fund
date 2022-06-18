@@ -1,16 +1,16 @@
-"""First migration
+"""First
 
-Revision ID: cd99817d2b62
+Revision ID: 916e164e4044
 Revises: 
-Create Date: 2022-06-17 23:26:28.721961
+Create Date: 2022-06-18 15:14:37.454148
 
 """
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'cd99817d2b62'
+revision = '916e164e4044'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('invested_amount', sa.Integer(), nullable=False),
     sa.Column('fully_invested', sa.Boolean(), nullable=True),
-    sa.Column('create_date', sa.DateTime(), nullable=False),
+    sa.Column('create_date', sa.DateTime(), nullable=True),
     sa.Column('close_date', sa.DateTime(), nullable=True),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
@@ -46,7 +46,7 @@ def upgrade():
     sa.Column('full_amount', sa.Integer(), nullable=True),
     sa.Column('invested_amount', sa.Integer(), nullable=False),
     sa.Column('fully_invested', sa.Boolean(), nullable=True),
-    sa.Column('create_date', sa.DateTime(), nullable=False),
+    sa.Column('create_date', sa.DateTime(), nullable=True),
     sa.Column('close_date', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('comment', sa.Text(), nullable=True),
