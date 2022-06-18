@@ -16,7 +16,8 @@ async def invested_donat(session: AsyncSession, db_obj):
         full_amount_donat = db_obj.full_amount
         total = project.invested_amount + full_amount_donat
         dict_donat = {'fully_invested': True,
-                      'close_date': datetime.now(),
+                      'close_date': datetime.now().strftime(
+                          '%Y-%m-%dT%H:%M:%S'),
                       'invested_amount': full_amount_donat
                       }
         if project_sum > full_amount_donat:
@@ -28,12 +29,14 @@ async def invested_donat(session: AsyncSession, db_obj):
                 setattr(db_obj, field, dict_donat[field])
             setattr(project, 'invested_amount', total)
             setattr(project, 'fully_invested', True)
-            setattr(project, 'close_date', datetime.now())
+            setattr(project, 'close_date', datetime.now().strftime(
+                '%Y-%m-%dT%H:%M:%S'))
         if project_sum < full_amount_donat:
             delta = full_amount_donat - project_sum
             setattr(project, 'invested_amount', project.full_amount)
             setattr(project, 'fully_invested', True)
-            setattr(project, 'close_date', datetime.now())
+            setattr(project, 'close_date', datetime.now().strftime(
+                '%Y-%m-%dT%H:%M:%S'))
             setattr(db_obj, 'invested_amount', delta)
         session.add(db_obj)
         session.add(project)
@@ -43,21 +46,26 @@ async def invested_donat(session: AsyncSession, db_obj):
         return db_obj, project
 
 
+async def upd(db_obj, obj_data, update_data):
+    for field in obj_data:
+        if field in update_data:
+            obj = setattr(db_obj, field, update_data[field])
+    return obj
+
+
 async def val(db_obj, obj_data, update_data, session):
     if 'full_amount' in update_data:
         if update_data['full_amount'] < obj_data['invested_amount']:
             return None
         if update_data['full_amount'] > obj_data['invested_amount']:
-            for field in obj_data:
-                if field in update_data:
-                    setattr(db_obj, field, update_data[field])
+            await upd(db_obj, obj_data, update_data)
         if update_data['full_amount'] == obj_data['invested_amount']:
-            for field in obj_data:
-                if field in update_data:
-                    setattr(db_obj, field, update_data[field])
-                    setattr(db_obj, 'fully_invested', True)
-                    setattr(db_obj, 'close_date', datetime.now())
-        session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
-        return db_obj
+            await upd(db_obj, obj_data, update_data)
+            setattr(db_obj, 'fully_invested', True)
+            setattr(db_obj, 'close_date', datetime.now())
+    else:
+        await upd(db_obj, obj_data, update_data)
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
