@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +12,7 @@ class CRUDDonationProject(CRUDBase):
 
     async def my_donations(self,
                            user: User,
-                           session: AsyncSession,) -> list[Donation]:
+                           session: AsyncSession,) -> List[Donation]:
         """
         Получает список донатов определенного пользователя.
         """

@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +14,7 @@ router = APIRouter()
 
 
 @router.get('/',
-            response_model=list[DonationDB_Full],
+            response_model=List[DonationDB_Full],
             dependencies=[Depends(current_superuser)],
             response_model_exclude_none=True,
             )
@@ -41,7 +43,7 @@ async def create_donations(
     return donation
 
 
-@router.get('/my', response_model=list[DonationDB],
+@router.get('/my', response_model=List[DonationDB],
             )
 async def get_my_donations(
         user: User = Depends(current_user),

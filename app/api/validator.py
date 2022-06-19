@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,7 +36,7 @@ async def project_is_exist(id: int,
     return project
 
 
-async def projects_is_exist(session: AsyncSession) -> list[CharityProject]:
+async def projects_is_exist(session: AsyncSession) -> List[CharityProject]:
     """
     Проверяет существование проектов.
     """
@@ -49,7 +51,7 @@ async def projects_is_exist(session: AsyncSession) -> list[CharityProject]:
 
 async def donate_is_exist(user: User,
                           session: AsyncSession
-                          ) -> list[Donation]:
+                          ) -> List[Donation]:
     """
     Проверяет существование доната.
     """
@@ -62,7 +64,7 @@ async def donate_is_exist(user: User,
     return donates
 
 
-async def donats_is_exist(session: AsyncSession) -> list[Donation]:
+async def donats_is_exist(session: AsyncSession) -> List[Donation]:
     """
     Проверяет существование донатов.
     """
