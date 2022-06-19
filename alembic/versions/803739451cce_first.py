@@ -1,16 +1,16 @@
 """First
 
-Revision ID: 916e164e4044
+Revision ID: 803739451cce
 Revises: 
-Create Date: 2022-06-18 15:14:37.454148
+Create Date: 2022-06-19 02:59:46.156993
 
 """
+from alembic import op
 import sqlalchemy as sa
 
-from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '916e164e4044'
+revision = '803739451cce'
 down_revision = None
 branch_labels = None
 depends_on = None

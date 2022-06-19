@@ -16,8 +16,7 @@ async def invested_donat(session: AsyncSession, db_obj):
         full_amount_donat = db_obj.full_amount
         total = project.invested_amount + full_amount_donat
         dict_donat = {'fully_invested': True,
-                      'close_date': datetime.now().strftime(
-                          '%Y-%m-%dT%H:%M:%S'),
+                      'close_date': datetime.now(),
                       'invested_amount': full_amount_donat
                       }
         if project_sum > full_amount_donat:
@@ -29,14 +28,12 @@ async def invested_donat(session: AsyncSession, db_obj):
                 setattr(db_obj, field, dict_donat[field])
             setattr(project, 'invested_amount', total)
             setattr(project, 'fully_invested', True)
-            setattr(project, 'close_date', datetime.now().strftime(
-                '%Y-%m-%dT%H:%M:%S'))
+            setattr(project, 'close_date', datetime.now())
         if project_sum < full_amount_donat:
             delta = full_amount_donat - project_sum
             setattr(project, 'invested_amount', project.full_amount)
             setattr(project, 'fully_invested', True)
-            setattr(project, 'close_date', datetime.now().strftime(
-                '%Y-%m-%dT%H:%M:%S'))
+            setattr(project, 'close_date', datetime.now())
             setattr(db_obj, 'invested_amount', delta)
         session.add(db_obj)
         session.add(project)
