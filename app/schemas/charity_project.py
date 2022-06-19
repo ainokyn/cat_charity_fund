@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, PositiveInt, validator
+from pydantic import BaseModel, Field, PositiveInt, validator, root_validator
 
 
 class CharityProject(BaseModel):
@@ -12,17 +12,33 @@ class CharityProject(BaseModel):
 
 class CharityProjectCreate(CharityProject):
 
-    @validator('name')
-    def name_len(cls, value: str):
-        if len(value) > 100:
-            raise ValueError('Слишком длинное имя проекта!')
-        return value
+    # @validator('name')
+    # def name_len(cls, value: str):
+    #     if len(value) > 100:
+    #         raise ValueError('Слишком длинное имя проекта!')
+    #     return value
 
-    @validator('description')
-    def description_len(cls, value: str):
-        if len(value) < 1:
-            raise ValueError('Слишком короткое описание проекта!')
-        return value
+    # @validator('description')
+    # def description_len(cls, value: str):
+    #     if len(value) < 1:
+    #         raise ValueError('Слишком короткое описание проекта!')
+    #     return value
+
+    @root_validator(skip_on_failure=True)
+    def field_validator(cls, values):
+        if values['description'] is None:
+            raise ValueError(
+                'Поле описание не должно быть пустым'
+            )
+        if values['name'] is None:
+            raise ValueError(
+                'Поле имя не должно быть пустым'
+            )
+        if values['full_amount'] is None:
+            raise ValueError(
+                'Поле проект не должно быть пустым'
+            )
+        return values
 
 
 class CharityProjectUpdate(CharityProjectCreate):

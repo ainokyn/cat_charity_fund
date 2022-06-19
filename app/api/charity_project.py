@@ -66,8 +66,8 @@ async def patch_charity(
     Только для суперюзеров.Закрытый проект нельзя редактировать,
     также нельзя установить требуемую сумму меньше уже вложенной.
     """
-    charity = await check_project_before_edit(project_id, session)
     if obj_in.name is not None:
         await name_uniq(obj_in.name, session)
+    charity = await check_project_before_edit(project_id, session)
     charity = await charityproject_crud.update(charity, obj_in, session)
     return charity

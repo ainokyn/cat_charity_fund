@@ -46,8 +46,8 @@ async def invested_donat(session: AsyncSession, db_obj):
 async def upd(db_obj, obj_data, update_data):
     for field in obj_data:
         if field in update_data:
-            obj = setattr(db_obj, field, update_data[field])
-    return obj
+            setattr(db_obj, field, update_data[field])
+    return db_obj
 
 
 async def val(db_obj, obj_data, update_data, session):
@@ -60,7 +60,7 @@ async def val(db_obj, obj_data, update_data, session):
             await upd(db_obj, obj_data, update_data)
             setattr(db_obj, 'fully_invested', True)
             setattr(db_obj, 'close_date', datetime.now())
-    else:
+    if 'full_amount' not in update_data:
         await upd(db_obj, obj_data, update_data)
     session.add(db_obj)
     await session.commit()
