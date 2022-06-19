@@ -12,17 +12,17 @@ class CharityProject(BaseModel):
 
 class CharityProjectCreate(CharityProject):
 
-    # @validator('name')
-    # def name_len(cls, value: str):
-    #     if len(value) > 100:
-    #         raise ValueError('Слишком длинное имя проекта!')
-    #     return value
+    @validator('name')
+    def name_len(cls, value: str):
+        if len(value) > 100:
+            raise ValueError('Слишком длинное имя проекта!')
+        return value
 
-    # @validator('description')
-    # def description_len(cls, value: str):
-    #     if len(value) < 1:
-    #         raise ValueError('Слишком короткое описание проекта!')
-    #     return value
+    @validator('description')
+    def description_len(cls, value: str):
+        if len(value) < 1:
+            raise ValueError('Слишком короткое описание проекта!')
+        return value
 
     @root_validator(skip_on_failure=True)
     def field_validator(cls, values):
