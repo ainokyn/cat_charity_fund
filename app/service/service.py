@@ -57,9 +57,9 @@ async def val(db_obj, obj_data, update_data, session):
         if update_data['full_amount'] > obj_data['invested_amount']:
             await upd(db_obj, obj_data, update_data)
         if update_data['full_amount'] == obj_data['invested_amount']:
-            await upd(db_obj, obj_data, update_data)
             setattr(db_obj, 'fully_invested', True)
             setattr(db_obj, 'close_date', datetime.now())
+            await upd(db_obj, obj_data, update_data)
     if 'full_amount' not in update_data:
         await upd(db_obj, obj_data, update_data)
     session.add(db_obj)
