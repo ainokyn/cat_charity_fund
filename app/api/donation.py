@@ -39,7 +39,7 @@ async def create_donations(
     """
     Сделать пожертвование. Только для зарегистрированных.
     """
-    donation = await donation_crud.create(donation, session, user)
+    donation = await donation_crud.create_donat(donation, session, user)
     return donation
 
 

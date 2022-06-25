@@ -38,7 +38,7 @@ async def create_charity(
     Только для суперюзеров. Создает благотворительный проект.
     """
     await name_uniq(charity.name, session)
-    charity = await charityproject_crud.create(charity, session)
+    charity = await charityproject_crud.create_project(charity, session)
     return charity
 
 

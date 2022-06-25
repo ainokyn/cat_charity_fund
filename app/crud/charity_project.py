@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
 from app.models.charity_project import CharityProject
-from app.service.service import val
+from app.service.service import invested_project, val
 
 
 class CRUDCharityProject(CRUDBase):
@@ -57,6 +57,22 @@ class CRUDCharityProject(CRUDBase):
         )
         db_project_id = project_id.scalars().first()
         return db_project_id
+
+    async def create_project(
+            self,
+            obj_in,
+            session: AsyncSession,
+    ):
+        """
+        Создает объект проекта.
+        """
+        obj_in_data = obj_in.dict()
+        db_obj = self.model(**obj_in_data)
+        session.add(db_obj)
+        await session.commit()
+        await session.refresh(db_obj)
+        await invested_project(session, db_obj)
+        return db_obj
 
 
 charityproject_crud = CRUDCharityProject(CharityProject)
