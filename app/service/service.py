@@ -8,32 +8,20 @@ from app.models.donation import Donation
 
 
 async def invested_project(session: AsyncSession, db_obj):
+    """
+    Функция для расчета инвестиций для проекта.
+    """
     donat = await session.execute(select(Donation))
     donat = donat.scalars().first()
     if donat:
-        project_sum = db_obj.full_amount - db_obj.invested_amount
-        full_amount_donat = donat.full_amount - donat.invested_amount
-        total = db_obj.invested_amount + full_amount_donat
-        dict_donat = {'fully_invested': True,
-                      'close_date': datetime.now(),
-                      'invested_amount': full_amount_donat
-                      }
+        project_sum, full_amount_donat, total, dict_donat, invested_amount = await advanced(db_obj, donat)
         if project_sum > full_amount_donat:
-            for field in dict_donat:
-                setattr(donat, field, dict_donat[field])
-            setattr(db_obj, 'invested_amount', total)
+            await project_summ_more_than_donat(dict_donat, donat, db_obj, total, full_amount_donat)
         if project_sum == full_amount_donat:
-            for field in dict_donat:
-                setattr(donat, field, dict_donat[field])
-            setattr(db_obj, 'invested_amount', total)
-            setattr(db_obj, 'fully_invested', True)
-            setattr(db_obj, 'close_date', datetime.now())
+            await project_summ_equal_to_donat(dict_donat, donat, db_obj, total, invested_amount)
         if project_sum < full_amount_donat:
-            invested_amount = db_obj.full_amount + donat.invested_amount
-            setattr(db_obj, 'invested_amount', db_obj.full_amount)
-            setattr(db_obj, 'fully_invested', True)
-            setattr(db_obj, 'close_date', datetime.now())
-            setattr(donat, 'invested_amount', invested_amount)
+            full_amount = db_obj.full_amount
+            await project_summ_less_than_donat(donat, db_obj, invested_amount, full_amount)
         session.add(donat)
         session.add(db_obj)
         await session.commit()
@@ -43,34 +31,22 @@ async def invested_project(session: AsyncSession, db_obj):
 
 
 async def invested_donat(session: AsyncSession, db_obj):
+    """
+    Функция для расчета инвестиций для доната.
+    """
     project = await session.execute(select(CharityProject).where(
         CharityProject.fully_invested == False).order_by(# noqa
             CharityProject.create_date.asc()))
     project = project.scalars().first()
     if project:
-        project_sum = project.full_amount - project.invested_amount
-        full_amount_donat = db_obj.full_amount - db_obj.invested_amount
-        total = project.invested_amount + full_amount_donat
-        dict_donat = {'fully_invested': True,
-                      'close_date': datetime.now(),
-                      'invested_amount': full_amount_donat
-                      }
+        project_sum, full_amount_donat, total, dict_donat, invested_amount = await advanced(project, db_obj)
         if project_sum > full_amount_donat:
-            for field in dict_donat:
-                setattr(db_obj, field, dict_donat[field])
-            setattr(project, 'invested_amount', total)
+            await project_summ_more_than_donat(dict_donat, db_obj, project, total, full_amount_donat)
         if project_sum == full_amount_donat:
-            for field in dict_donat:
-                setattr(db_obj, field, dict_donat[field])
-            setattr(project, 'invested_amount', total)
-            setattr(project, 'fully_invested', True)
-            setattr(project, 'close_date', datetime.now())
+            await project_summ_equal_to_donat(dict_donat, db_obj, project, total, invested_amount)
         if project_sum < full_amount_donat:
-            invested_amount = project.full_amount + db_obj.invested_amount
-            setattr(project, 'invested_amount', project.full_amount)
-            setattr(project, 'fully_invested', True)
-            setattr(project, 'close_date', datetime.now())
-            setattr(db_obj, 'invested_amount', invested_amount)
+            full_amount = project.full_amount
+            await project_summ_less_than_donat(db_obj, project, invested_amount, full_amount)
         session.add(db_obj)
         session.add(project)
         await session.commit()
@@ -79,7 +55,63 @@ async def invested_donat(session: AsyncSession, db_obj):
         return db_obj
 
 
+async def advanced(project, donat):
+    """
+    Вспомогательная функция для расчета project_sum,
+    full_amount_donat, total и передачи словаря dict_donat.
+    """
+    project_sum = project.full_amount - project.invested_amount
+    full_amount_donat = donat.full_amount - donat.invested_amount
+    total = project.invested_amount + full_amount_donat
+    invested_amount = project.full_amount + donat.invested_amount
+    dict_donat = {'fully_invested': True,
+                  'close_date': datetime.now()
+                  }
+    return project_sum, full_amount_donat, total, dict_donat, invested_amount
+
+
+async def project_summ_more_than_donat(dict_donat, donat, project, total, full_amount_donat):
+    """
+    Вспомогательная функция для обработки варианта,
+    где сумма проекта больше суммы доната.
+    """
+    for field in dict_donat:
+        setattr(donat, field, dict_donat[field])
+    setattr(donat, 'invested_amount', full_amount_donat)
+    setattr(project, 'invested_amount', total)
+    return project, donat
+
+
+async def project_summ_equal_to_donat(dict_donat, donat, project, total, invested_amount):
+    """
+    Вспомогательная функция для обработки варианта,
+    где сумма проекта равна сумме доната.
+    """
+    for field in dict_donat:
+        setattr(donat, field, dict_donat[field])
+    setattr(donat, 'invested_amount', invested_amount)
+    setattr(project, 'invested_amount', total)
+    setattr(project, 'fully_invested', True)
+    setattr(project, 'close_date', datetime.now())
+    return project, donat
+
+
+async def project_summ_less_than_donat(donat, project, invested_amount, full_amount):
+    """
+    Вспомогательная функция для обработки варианта,
+    где сумма проекта меньше суммы доната.
+    """
+    setattr(project, 'invested_amount', full_amount)
+    setattr(project, 'fully_invested', True)
+    setattr(project, 'close_date', datetime.now())
+    setattr(donat, 'invested_amount', invested_amount)
+    return project, donat
+
+
 async def upd(db_obj, obj_data, update_data):
+    """
+    Вспомогательная функция для обновления полей модели.
+    """
     for field in obj_data:
         if field in update_data:
             setattr(db_obj, field, update_data[field])
@@ -87,6 +119,9 @@ async def upd(db_obj, obj_data, update_data):
 
 
 async def val(db_obj, obj_data, update_data, session):
+    """
+    Функция для перерасчета инвестиций при обновлении проекта.
+    """
     if 'full_amount' in update_data:
         if update_data['full_amount'] < obj_data['invested_amount']:
             return None
